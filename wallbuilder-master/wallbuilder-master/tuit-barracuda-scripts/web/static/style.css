@@ -1,0 +1,28 @@
+body
+{
+	font-family: sans-serif;
+}
+
+table, th, td
+{
+	border: 1px solid #ccc;
+}
+
+th, td
+{
+	padding: 0.2em 0.4em;
+	vertical-align: top;
+}
+
+th
+{
+	background-color: #600;
+	color: #fff;
+}
+
+p.motd
+{
+	background-color: #ffecdd;
+	border: 1px solid #ffb06f;
+	padding: 0.5em;
+}
