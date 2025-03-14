@@ -1,0 +1,38 @@
+common:
+  allowed_object_names:
+    - ALL
+    - FTP
+    - POPIMAP
+    - REMOTE
+    - SSH
+    - WWW
+    - MAIL
+cmdb:
+  type: aixboms
+  server: |
+    (DESCRIPTION=
+      (ADDRESS_LIST=
+        (FAILOVER=ON)
+        (LOAD_BALANCE=OFF)
+        (ADDRESS=(PROTOCOL=TCP)(HOST=oradb-prod-20a.it.tuwien.ac.at)(PORT=1521))
+        (ADDRESS=(PROTOCOL=TCP)(HOST=oradb-prod-20b.it.tuwien.ac.at)(PORT=1521))
+      )
+      (CONNECT_DATA=
+        (SERVER=DEDICATED)
+        (SERVICE_NAME=AIXBOMS_P_01_SVC.it.tuwien.ac.at)
+      )
+    )
+  username: aixboms_ro
+  password: 'Secret'
+  scope: TUFW
+
+firewall:
+  type: barracuda
+  base_uri: https://fwcc-box.kom.tuwien.ac.at:8443/
+  username: netdb2fw
+  password: Secret
+  ca_cert_location: /pd/firewallbuilder/ca.pem
+  objects:
+    type: cc-global
+    name_format_ipv4: "TUDB2BAR-V4-{0}"
+    name_format_ipv6: "TUDB2BAR-V6-{0}"

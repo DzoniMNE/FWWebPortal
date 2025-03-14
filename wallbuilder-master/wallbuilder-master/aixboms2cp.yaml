@@ -1,0 +1,58 @@
+common:
+  allowed_object_names:
+    - ALL
+    - FTP
+    - POPIMAP
+    - REMOTE
+    - SSH
+    - WWW
+    - WWW_ALT
+    - MAIL
+cmdb:
+  type: aixboms
+  server: |
+    (DESCRIPTION=
+      (ADDRESS_LIST=
+        (FAILOVER=ON)
+        (LOAD_BALANCE=OFF)
+        (ADDRESS=(PROTOCOL=TCP)(HOST=oradb-prod-20a.it.tuwien.ac.at)(PORT=1521))
+        (ADDRESS=(PROTOCOL=TCP)(HOST=oradb-prod-20b.it.tuwien.ac.at)(PORT=1521))
+      )
+      (CONNECT_DATA=
+        (SERVER=DEDICATED)
+        (SERVICE_NAME=AIXBOMS_P_01_SVC.it.tuwien.ac.at)
+      )
+    )
+  username: aixboms_ro
+  password: 'Secret'
+  scope: TUFW
+
+firewall:
+  type: checkpoint
+  base_uri: 'https://fw-sms-mds-m.it.tuwien.ac.at/web_api/'
+  api_key: 'Secret'
+  domain: 'b0d3722e-6b94-4b0c-9602-f8d3220fa1a6' # FW-DOM-E020
+  net_groups:
+    name_format_ipv4: "TUDB2CP4-{0}"
+    name_format_ipv6: "TUDB2CP6-{0}"
+    addr_prefix_ipv4: "TUDB4_"
+    addr_prefix_ipv6: "TUDB6_"
+    sentinel_ipv4: "SENTINEL_TUDB4"
+    sentinel_ipv6: "SENTINEL_TUDB6"
+  install:
+    policy_package: "Internet"
+    targets: ["FW-INT"]
+    additional_options:
+      access: true
+      threat-prevention: false
+
+#www:
+#  motd: >
+#    Das Webinterface interagiert nur mit der Check-Point-Firewall. Der Zugriff
+#    auf die Barracuda-Firewall muss aktuell &uuml;ber Scripts stattfinden.
+
+history:
+  type: git
+  repo: 'git@balok.kom.tuwien.ac.at:config-history/tufw-history.git'
+  file_name: rules.txt
+  fresh_checkout: true

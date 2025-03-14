@@ -1,0 +1,21 @@
+{%- set subject -%}geplante Aenderungen der TU-Firewall-Objekte{%- endset -%}
+
+Beim Durchlauf heute um 07:55 werden nach aktuellem Stand folgende
+Aenderungen an TU-Firewall-Objekten durchgefuehrt:
+
+{% for line in diff.split("\n") -%}
+  {%- set parts = line.split("\t") -%}
+  {%- if parts|length == 6 -%}
+    {%- if parts[1] == "+" -%}
+{{ "{0:7} + {4:15} ({5})".format(*parts) }}
+    {%- elif parts[1] == "-" -%}
+{{ "{0:7} - {2:15} ({3})".format(*parts) }}
+    {%- elif parts[1] == "/" -%}
+{{ "{0:7} / {2:15} ({3}) -> ({5})".format(*parts) }}
+    {%- else -%}
+{{ line }}
+    {%- endif -%}
+  {%- endif %}
+{% endfor -%}
+
+## Ende

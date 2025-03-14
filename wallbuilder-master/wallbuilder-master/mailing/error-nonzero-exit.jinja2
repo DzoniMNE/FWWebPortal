@@ -1,0 +1,15 @@
+{%- set action -%}{% if dry_run %}Ueberpruefung{% else %}Aktualisierung{% endif %}{%- endset -%}
+{%- set subject -%}Fehler bei {{ action }} der TU-Firewall-Objekte{%- endset -%}
+
+Bei der {{ action }} der TU-Firewall-Objekte war das Modul
+tuitfw.tools.updaterules nicht erfolgreich.
+
+Fehlercode: {{ ret }}
+
+## Standardausgabe (stdout)
+{{ stdout }}
+
+## Fehlerausgabe (stderr)
+{{ stderr }}
+
+## Ende

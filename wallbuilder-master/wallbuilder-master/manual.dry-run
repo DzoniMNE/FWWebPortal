@@ -1,0 +1,23 @@
+#!/bin/sh
+
+if [ "x$FWBUILDER_OPTFILE" = "x" ]
+then
+	FWBUILDER_OPTFILE="/pd/firewallbuilder/options.sh"
+fi
+
+fwbuilder_trigger="manual"
+fwbuilder_run="dry"
+. "$FWBUILDER_OPTFILE"
+
+# ensure the output directory exists
+mkdir -p "$fwbuilder_output_dir"
+
+LD_LIBRARY_PATH="/opt/oracle-client" \
+PYTHONPATH="$fwbuilder_script_dir" \
+    python3 -m tuitfw.tools.updaterules \
+    --config="$fwbuilder_config_file" \
+    --dry-run \
+    --output-cmdb="$fwbuilder_cmdb_file" \
+    --output-firewall="$fwbuilder_firewall_file" \
+    --output-diff="$fwbuilder_diff_file" \
+    "$@"

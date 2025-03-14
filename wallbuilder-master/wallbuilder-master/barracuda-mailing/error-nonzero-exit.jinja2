@@ -1,0 +1,19 @@
+{%- set action -%}{% if dry_run %}Ueberpruefung{% else %}Aktualisierung{% endif %}{%- endset -%}
+{%- set subject -%}Fehler bei {{ action }} der TU-Firewall-Objekte{%- endset -%}
+
+Bei der {{ action }} der TU-Firewall-Objekte war das Modul
+tuitfw.tools.updaterules nicht erfolgreich.
+
+Fehlercode: {{ ret }}
+
+(Dieses Mail ist vom Barracuda-Prozess; es kommt noch ein weiteres --
+dort, wo hier unten nichts steht -- von der produktiven
+Check-Point-Installation.)
+
+## Standardausgabe (stdout)
+{{ stdout }}
+
+## Fehlerausgabe (stderr)
+{{ stderr }}
+
+## Ende

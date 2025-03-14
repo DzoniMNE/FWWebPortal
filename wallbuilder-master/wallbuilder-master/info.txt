@@ -1,0 +1,110 @@
+# Firewall-Übertragungsskript TUNETDB -> Barracuda
+
+Dieser Server (wallbuilder) wird von Puppet auf balok5 verwaltet.
+
+Dieser Ordner ist eine Git-Repository; siehe
+https://balok.kom.tuwien.ac.at/komboxes/wallbuilder
+
+Der Unterordner tuit-barracuda-scripts ist als Git-Submodul eingebunden; siehe
+https://balok.kom.tuwien.ac.at/ohosek/tuit-barracuda-scripts
+
+Das Verfahren ist dokumentiert unter
+http://nocwiki.kom.tuwien.ac.at/nocwiki/Firewall/ExterneNetzobjekteREST
+
+Kurz und bündig:
+
+1. Täglich um 7:00 wird ./cron.dry-run ausgeführt. Die Unterschiede zwischen der
+   Firewall-Konfiguration und der aus der TUNETDB extrahierten Attributwerte
+   werden ermittelt und per Mail ausgeschickt.
+
+2. Mo-Fr um 7:55 wird ./cron.full-run ausgeführt. Es werden erneut die
+   Unterschiede ermittelt, diesmal jedoch wirklich in die Firewall eingespielt.
+
+Um ein außertourliches Update durchzuführen reicht es ./manual.full-run
+auszuführen. Es ist aber empfehlenswert davor ./manual.dry-run auszuführen und
+sich die einzuspielenden Änderungen in der Datei diff.manual.dry-run anzusehen.
+
+## Dateien
+
+| Datei                          | Beschreibung                                |
+| ------------------------------ | ------------------------------------------- |
+| cron.dry-run                   | Bash-Skript, das von Cron getriggert wird,  |
+|                                | die zu ändernden Werte ermittelt und        |
+|                                | ausschickt.                                 |
+|                                |                                             |
+| cron.full-run                  | Bash-Skript, das von Cron getriggert wird   |
+|                                | und die geänderten Werte zur Firewall       |
+|                                | schickt.                                    |
+|                                |                                             |
+| manual.dry-run                 | Manuelles Ausführungsskript; ermittelt die  |
+|                                | Änderungen, schickt aber keine Mails aus.   |
+|                                |                                             |
+| manual.full-run                | Manuelles Ausführungsskript; spielt die     |
+|                                | Änderungen ein, schickt aber keine Mails    |
+|                                | aus.                                        |
+|                                |                                             |
+| options.sh                     | Konfigurationsoptionen wie Dateinamen und   |
+|                                | Adressen der Mailziele. Wird von den        |
+|                                | dry-run- und full-run-Skripts eingelesen.   |
+|                                |                                             |
+| aixboms2barracuda.yaml         | Konfigurationsdatei fürs                    |
+|                                | Übertragungsskript.                         |
+|                                |                                             |
+| ca.pem                         | Datei mit den Zertifikaten der              |
+|                                | Zertifizierungsstellen, die das Zertifikat  |
+|                                | des Firewall Control Centers ausgestellt    |
+|                                | haben (der Zertifikatsgültigkeitsprüfung    |
+|                                | wegen).                                     |
+|                                |                                             |
+| output/diff.cron.dry-run       | Beim letzten Aufruf von cron.dry-run        |
+|                                | ermittelte Unterschiede zwischen der        |
+|                                | Firewall-Konfiguration und den Werten in    |
+|                                | der TUNET-Datenbank.                        |
+|                                |                                             |
+| output/diff.cron.full-run      | Beim letzten Aufruf von cron.full-run       |
+|                                | ermittelte Unterschiede zwischen der        |
+|                                | Firewall-Konfiguration und den Werten in    |
+|                                | der TUNET-Datenbank.                        |
+|                                |                                             |
+| output/diff.manual.dry-run     | Beim letzten Aufruf von manual.dry-run      |
+|                                | ermittelte Unterschiede zwischen der        |
+|                                | Firewall-Konfiguration und den Werten in    |
+|                                | der TUNET-Datenbank.                        |
+|                                |                                             |
+| output/diff.manual.full-run    | Beim letzten Aufruf von manual.full-run     |
+|                                | ermittelte Unterschiede zwischen der        |
+|                                | Firewall-Konfiguration und den Werten in    |
+|                                | der TUNET-Datenbank.                        |
+|                                |                                             |
+| output/firewall.cron.dry-run   | Beim letzten Aufruf von cron.dry-run        |
+|                                | ermittelte Liste aktiver Freischaltungen    |
+|                                | auf der Firewall.                           |
+|                                |                                             |
+| output/firewall.manual.dry-run | Beim letzten Aufruf von manual.dry-run      |
+|                                | ermittelte Liste aktiver Freischaltungen    |
+|                                | auf der Firewall.                           |
+|                                |                                             |
+| output/tunetdb.cron.dry-run    | Beim letzten Aufruf von cron.dry-run        |
+|                                | ermittelte Liste gewünschter                |
+|                                | Freischaltungen laut TUNETDB.               |
+|                                |                                             |
+| output/tunetdb.cron.full-run   | Beim letzten Aufruf von cron.full-run       |
+|                                | ermittelte Liste gewünschter                |
+|                                | Freischaltungen laut TUNETDB.               |
+|                                |                                             |
+| output/tunetdb.manual.dry-run  | Beim letzten Aufruf von manual.dry-run      |
+|                                | ermittelte Liste gewünschter                |
+|                                | Freischaltungen laut TUNETDB.               |
+|                                |                                             |
+| output/tunetdb.manual.full-run | Beim letzten Aufruf von manual.full-run     |
+|                                | ermittelte Liste gewünschter                |
+|                                | Freischaltungen laut TUNETDB.               |
+|                                |                                             |
+| www/index.php                  | Datei mit der Implementierung der           |
+|                                | Webanzeige der aktuellen                    |
+|                                | Firewallfreischaltungen.                    |
+|                                |                                             |
+| tuit-barracuda-scripts/        | Ordner mit dem Übertragungsskriptsatz       |
+|                                | (eigenes Repository, als Git-Submodul       |
+|                                | eingebunden).                               |
+|                                |                                             |

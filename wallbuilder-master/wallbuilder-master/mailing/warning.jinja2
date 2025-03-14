@@ -1,0 +1,14 @@
+{%- set action -%}{% if dry_run %}Ueberpruefung{% else %}Aktualisierung{% endif %}{%- endset -%}
+{%- set subject -%}Warnung bei {{ action }} der TU-Firewall-Objekte{%- endset -%}
+
+Bei der {{ action }} der TU-Firewall-Objekte war das Modul
+tuitfw.tools.updaterules insgesamt erfolgreich; bestimmte Eintraege haben
+jedoch zu Warnmeldungen gefuehrt.
+
+## Standardausgabe (stdout)
+{{ stdout }}
+
+## Fehlerausgabe (stderr)
+{{ stderr }}
+
+## Ende

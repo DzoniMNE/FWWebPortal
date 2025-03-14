@@ -1,0 +1,119 @@
+#!/bin/sh
+
+if [ "x$FWBUILDER_OPTFILE" = "x" ]
+then
+	FWBUILDER_OPTFILE="/pd/firewallbuilder/options.sh"
+fi
+
+fwbuilder_trigger="cron"
+fwbuilder_run="dry"
+. "$FWBUILDER_OPTFILE"
+
+# mollyguard
+mg="$1"
+if [ "x$mg" != "x--mollyguard" ]
+then
+    echo "This script has been called incorrectly." >&2
+    echo "" >&2
+    echo "If you are a human, you should run `dirname "$0"`/manual.$fwbuilder_run-run instead." >&2
+    exit 1
+
+    # If you are actually setting up a cron job (or testing it): pass
+    # --mollyguard as the first argument to this script.
+fi
+# drop the first argument (--mollyguard)
+# only pass the rest to the Python script
+shift
+
+# is the process active?
+if [ "$fwbuilder_active" -ne 1 ]
+then
+    # no; skip the dry run
+    exit 0
+fi
+
+# ensure the output directory exists
+mkdir -p "$fwbuilder_output_dir"
+
+# delete the diff file to ensure it is recreated
+rm -f "$fwbuilder_diff_file"
+
+# run the update script, remembering the exit code
+LD_LIBRARY_PATH="/opt/oracle-client" \
+PYTHONPATH="$fwbuilder_script_dir" \
+    python3 -m tuitfw.tools.updaterules \
+    --config="$fwbuilder_config_file" \
+    --dry-run \
+    --output-cmdb="$fwbuilder_cmdb_file" \
+    --output-firewall="$fwbuilder_firewall_file" \
+    --output-diff="$fwbuilder_diff_file" \
+    "$@" \
+    >"$fwbuilder_stdout_file" \
+    2>"$fwbuilder_stderr_file"
+ret="$?"
+
+# in case sending mail fails, output stdout and stderr normally too (for cron)
+cat "$fwbuilder_stdout_file"
+cat "$fwbuilder_stderr_file" >&2
+
+if [ "$ret" -ne 0 ]
+then
+    # that didn't work out
+
+    python3 "$fwbuilder_mailing_script_dir/mailing.py" \
+        --template="$fwbuilder_mailing_template_dir/error-nonzero-exit.jinja2" \
+        --value=ret="$ret" \
+        --value-from-file=stdout="$fwbuilder_stdout_file" \
+        --value-from-file=stderr="$fwbuilder_stderr_file" \
+        --yes=dry_run \
+        --sender="$fwbuilder_mail_sender" \
+        --recipient="$fwbuilder_info_mail_target"
+
+    exit "$ret"
+fi
+
+if [ -s "$fwbuilder_stdout_file" -o -s "$fwbuilder_stderr_file" ]
+then
+    # success, but a warning was output
+
+    python3 "$fwbuilder_mailing_script_dir/mailing.py" \
+        --template="$fwbuilder_mailing_template_dir/warning.jinja2" \
+        --value-from-file=stdout="$fwbuilder_stdout_file" \
+        --value-from-file=stderr="$fwbuilder_stderr_file" \
+        --yes=dry_run \
+        --sender="$fwbuilder_mail_sender" \
+        --recipient="$fwbuilder_info_mail_target"
+
+    # continue -- maybe the diff is missing, which makes matters worse
+fi
+
+if [ ! -f "$fwbuilder_diff_file" ]
+then
+    # no diff, that's bad
+
+    python3 "$fwbuilder_mailing_script_dir/mailing.py" \
+        --template="$fwbuilder_mailing_template_dir/error-missing-diff.jinja2" \
+        --value-from-file=stdout="$fwbuilder_stdout_file" \
+        --value-from-file=stderr="$fwbuilder_stderr_file" \
+        --yes=dry_run \
+        --sender="$fwbuilder_mail_sender" \
+        --recipient="$fwbuilder_info_mail_target"
+
+    exit 1
+fi
+
+# second step: e-mail
+diff_size="`stat -c "%s" "$fwbuilder_diff_file"`"
+if [ "$diff_size" -eq 0 ]
+then
+    python3 "$fwbuilder_mailing_script_dir/mailing.py" \
+        --template="$fwbuilder_mailing_template_dir/success-no-change.jinja2" \
+        --sender="$fwbuilder_mail_sender" \
+        --recipient="$fwbuilder_alive_mail_target"
+else
+    python3 "$fwbuilder_mailing_script_dir/mailing.py" \
+        --template="$fwbuilder_mailing_template_dir/success-changes.jinja2" \
+        --value-from-file=diff="$fwbuilder_diff_file" \
+        --sender="$fwbuilder_mail_sender" \
+        --recipient="$fwbuilder_info_mail_target"
+fi
